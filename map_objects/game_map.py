@@ -132,8 +132,8 @@ class GameMap:
 
         item_chances = {
             'healing_potion': 35,
-            'sword': from_dungeon_level([[60, 1]], self.dungeon_level),
-            'shield': from_dungeon_level([[15, 8]], self.dungeon_level),
+            'sword': from_dungeon_level([[15, 1]], self.dungeon_level),
+            'shield': from_dungeon_level([[15, 1]], self.dungeon_level),
             'lightning_scroll': from_dungeon_level([[25, 4]], self.dungeon_level),
             'fireball_scroll': from_dungeon_level([[25, 6]], self.dungeon_level),
             'confusion_scroll': from_dungeon_level([[10, 2]], self.dungeon_level)
@@ -169,7 +169,7 @@ class GameMap:
                 item_choice = random_choice_from_dict(item_chances)
 
                 if item_choice == 'healing_potion':
-                    item_component = Item(use_function=heal, amount=4)
+                    item_component = Item(use_function=heal, amount=10)
                     item = Entity(x, y, '!', libtcod.violet, 'Healing Potion', render_order=RenderOrder.ITEM,
                                   item=item_component)
                 elif item_choice == 'fireball_scroll':
@@ -229,6 +229,7 @@ class GameMap:
 
         game_map = GameMap(width, height)
         game_map.initialize_tiles()
+        game_map.dungeon_level = dungeon_level
 
         for y in range(height):
             for x in range(width):

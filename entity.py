@@ -14,13 +14,15 @@ from components.item import Item
 from components.equipment import Equipment
 from components.equippable import Equippable
 
+import uuid
+
 
 class Entity:
     """
     A generic object to represent players, enemies, items, etc.
     """
     def __init__(self, x, y, char, color, name, blocks=False, render_order=RenderOrder.CORPSE, fighter=None, ai=None,
-                 item=None, inventory=None, stairs=None, level=None, equipment=None, equippable=None):
+                 item=None, inventory=None, stairs=None, level=None, equipment=None, equippable=None,uID=None):
         self.x = x
         self.y = y
         self.char = char
@@ -36,6 +38,12 @@ class Entity:
         self.level = level
         self.equipment = equipment
         self.equippable = equippable
+
+        #TODO check if stackable
+        if uID is None:
+            self.uID = uuid.uuid4().hex
+        else:
+            self.uID = uID
 
         if self.fighter:
             self.fighter.owner = self
@@ -190,7 +198,8 @@ class Entity:
             'stairs': stairs_data,
             'level': level_data,
             'equipment': equipment_data,
-            'equippable': equippable_data
+            'equippable': equippable_data,
+            'uID': self.uID
         }
 
         return json_data
@@ -213,8 +222,9 @@ class Entity:
         level_json = json_data.get('level')
         equipment_json = json_data.get('equipment')
         equippable_json = json_data.get('equippable')
+        uID_data = json_data.get('uID')
 
-        entity = Entity(x, y, char, color, name, blocks, render_order)
+        entity = Entity(x, y, char, color, name, blocks, render_order,uID=uID_data)
 
         if fighter_json:
             entity.fighter = Fighter.from_json(fighter_json)
@@ -259,7 +269,6 @@ class Entity:
             entity.equippable.owner = entity
 
         return entity
-
 
 def get_blocking_entities_at_location(entities, destination_x, destination_y):
     for entity in entities:

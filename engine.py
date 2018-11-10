@@ -141,6 +141,8 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
                 if target and target != player:
                     attack_results = player.fighter.attack(target)
                     player_turn_results.extend(attack_results)
+                elif target:
+                    message_log.add_message(Message('You take a short rest',libtcod.white))
                 else:
                     player.move(dx, dy)
 

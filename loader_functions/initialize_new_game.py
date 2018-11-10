@@ -42,7 +42,7 @@ def get_constants():
     fov_radius = 10
 
     max_monsters_per_room = 3
-    max_items_per_room = 8
+    max_items_per_room = 12
 
     colors = {
         'dark_wall': libtcod.Color(0, 0, 100),
@@ -77,7 +77,7 @@ def get_constants():
     return constants
 
 def get_game_variables(constants):
-    fighter_component = Fighter(hp=300, defense=3, power=5)
+    fighter_component = Fighter(hp=100, defense=1, power=5)
     inventory_component = Inventory(26)
     level_component = Level()
     equipment_component = Equipment()

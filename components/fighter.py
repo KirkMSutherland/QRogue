@@ -71,8 +71,8 @@ class Fighter:
         json_data = {
             'base_max_hp': self.max_hp,
             'hp': self.hp,
-            'base_defense': self.defense,
-            'base_power': self.power,
+            'base_defense': self.base_defense,
+            'base_power': self.base_power,
             'xp': self.xp
         }
 

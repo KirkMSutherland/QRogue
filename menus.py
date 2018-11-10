@@ -37,11 +37,17 @@ def inventory_menu(con, header, player, inventory_width, screen_width, screen_he
         options = []
 
         for item in player.inventory.items:
-            if player.equipment.main_hand == item:
-                options.append('{0} (on main hand)'.format(item.name))
-            elif player.equipment.off_hand == item:
-                options.append('{0} (on off hand)'.format(item.name))
-            else:
+            iflag = 0
+            if player.equipment.main_hand is not None:
+                if player.equipment.main_hand.uID == item.uID:
+                    options.append('{0} (on main hand)'.format(item.name))
+                    iflag = 1
+            if player.equipment.off_hand is not None:
+                if player.equipment.off_hand.uID == item.uID:
+                    options.append('{0} (on off hand)'.format(item.name))
+                    iflag = 1
+
+            if iflag == 0:
                 options.append(item.name)
 
 
@@ -54,7 +60,7 @@ def main_menu(con, background_image, screen_width, screen_height):
     libtcod.console_print_ex(0, int(screen_width / 2), int(screen_height / 2) - 4, libtcod.BKGND_NONE, libtcod.CENTER,
                              'DARK SPIRAL')
     libtcod.console_print_ex(0, int(screen_width / 2), int(screen_height - 2), libtcod.BKGND_NONE, libtcod.CENTER,
-                             'By Kirk Sutherland')
+                             'By KirkusMax')
 
     menu(con, '', ['Play a new game', 'Continue last game', 'Quit'], 24, screen_width, screen_height)
 
@@ -84,6 +90,14 @@ def character_screen(player, character_screen_width, character_screen_height, sc
                                   libtcod.LEFT, 'Attack: {0}'.format(player.fighter.power))
     libtcod.console_print_rect_ex(window, 0, 8, character_screen_width, character_screen_height, libtcod.BKGND_NONE,
                                   libtcod.LEFT, 'Defense: {0}'.format(player.fighter.defense))
+
+    if player.equipment.main_hand is not None:
+        libtcod.console_print_rect_ex(window, 0, 9, character_screen_width, character_screen_height, libtcod.BKGND_NONE,
+                                      libtcod.LEFT, 'Main Hand: {0}'.format(player.equipment.main_hand.name))
+
+    if player.equipment.off_hand is not None:
+        libtcod.console_print_rect_ex(window, 0, 10, character_screen_width, character_screen_height, libtcod.BKGND_NONE,
+                                      libtcod.LEFT, 'Off Hand: {0}'.format(player.equipment.off_hand.name))
 
     x = screen_width // 2 - character_screen_width // 2
     y = screen_height // 2 - character_screen_height // 2
