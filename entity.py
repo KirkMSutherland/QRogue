@@ -10,6 +10,9 @@ from components.item import Item
 from components.inventory import Inventory
 from components.stairs import Stairs
 from components.level import Level
+from components.item import Item
+from components.equipment import Equipment
+from components.equippable import Equippable
 
 
 class Entity:
@@ -17,7 +20,7 @@ class Entity:
     A generic object to represent players, enemies, items, etc.
     """
     def __init__(self, x, y, char, color, name, blocks=False, render_order=RenderOrder.CORPSE, fighter=None, ai=None,
-                 item=None, inventory=None, stairs=None, level = None):
+                 item=None, inventory=None, stairs=None, level=None, equipment=None, equippable=None):
         self.x = x
         self.y = y
         self.char = char
@@ -31,6 +34,8 @@ class Entity:
         self.inventory = inventory
         self.stairs = stairs
         self.level = level
+        self.equipment = equipment
+        self.equippable = equippable
 
         if self.fighter:
             self.fighter.owner = self
@@ -49,6 +54,17 @@ class Entity:
 
         if self.level:
             self.level.owner = self
+
+        if self.equipment:
+            self.equipment.owner = self
+
+        if self.equippable:
+            self.equippable.owner = self
+
+            if not self.item:
+                item = Item()
+                self.item = item
+                self.item.owner = self
 
     def move(self, dx, dy):
         # Move the entity by a given amount
@@ -149,6 +165,16 @@ class Entity:
         else:
             level_data = None
 
+        if self.equipment:
+            equipment_data = self.equipment.to_json()
+        else:
+            equipment_data = None
+
+        if self.equippable:
+            equippable_data = self.equippable.to_json()
+        else:
+            equippable_data = None
+
         json_data = {
             'x': self.x,
             'y': self.y,
@@ -162,7 +188,9 @@ class Entity:
             'item': item_data,
             'inventory': inventory_data,
             'stairs': stairs_data,
-            'level': level_data
+            'level': level_data,
+            'equipment': equipment_data,
+            'equippable': equippable_data
         }
 
         return json_data
@@ -183,6 +211,8 @@ class Entity:
         inventory_json = json_data.get('inventory')
         stairs_json = json_data.get('stairs')
         level_json = json_data.get('level')
+        equipment_json = json_data.get('equipment')
+        equippable_json = json_data.get('equippable')
 
         entity = Entity(x, y, char, color, name, blocks, render_order)
 
@@ -219,6 +249,14 @@ class Entity:
         if level_json:
             entity.level = Level.from_json(level_json)
             entity.level.owner = entity
+
+        if equipment_json:
+            entity.equipment = Equipment.from_json(equipment_json)
+            entity.equipment.owner = entity
+
+        if equippable_json:
+            entity.equippable = Equippable.from_json(equippable_json)
+            entity.equippable.owner = entity
 
         return entity
 

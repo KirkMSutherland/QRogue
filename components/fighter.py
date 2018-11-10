@@ -4,10 +4,10 @@ from game_messages import Message
 
 class Fighter:
     def __init__(self, hp, defense, power, xp=0):
-        self.max_hp = hp
+        self.base_max_hp = hp
         self.hp = hp
-        self.defense = defense
-        self.power = power
+        self.base_defense = defense
+        self.base_power = power
         self.xp = xp
 
     def take_damage(self, amount):
@@ -40,12 +40,39 @@ class Fighter:
             
         return results
 
+    @property
+    def max_hp(self):
+        if self.owner and self.owner.equipment:
+            bonus = self.owner.equipment.max_hp_bonus
+        else:
+            bonus = 0
+
+        return self.base_max_hp + bonus
+
+    @property
+    def power(self):
+        if self.owner and self.owner.equipment:
+            bonus = self.owner.equipment.power_bonus
+        else:
+            bonus = 0
+
+        return self.base_power + bonus
+
+    @property
+    def defense(self):
+        if self.owner and self.owner.equipment:
+            bonus = self.owner.equipment.defense_bonus
+        else:
+            bonus = 0
+
+        return self.base_defense + bonus
+
     def to_json(self):
         json_data = {
-            'max_hp': self.max_hp,
+            'base_max_hp': self.max_hp,
             'hp': self.hp,
-            'defense': self.defense,
-            'power': self.power,
+            'base_defense': self.defense,
+            'base_power': self.power,
             'xp': self.xp
         }
 
@@ -53,10 +80,10 @@ class Fighter:
 
     @staticmethod
     def from_json(json_data):
-        max_hp = json_data.get('max_hp')
+        max_hp = json_data.get('base_max_hp')
         hp = json_data.get('hp')
-        defense = json_data.get('defense')
-        power = json_data.get('power')
+        defense = json_data.get('base_defense')
+        power = json_data.get('base_power')
         xp = json_data.get('xp')
 
         fighter = Fighter(max_hp, defense, power, xp)
