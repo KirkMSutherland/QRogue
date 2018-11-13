@@ -19,6 +19,42 @@ def heal(*args, **kwargs):
 
     return results
 
+
+def fire_arrow(*args, **kwargs):
+    caster = args[0]
+    entities = kwargs.get('entities')
+    fov_map = kwargs.get('fov_map')
+    damage = kwargs.get('damage')
+    maximum_range = kwargs.get('maximum_range')
+    target_x = kwargs.get('target_x')
+    target_y = kwargs.get('target_y')
+
+    results = []
+
+    target = None
+
+    if not libtcod.map_is_in_fov(fov_map, target_x, target_y):
+        results.append({'consumed': False, 'message': Message('You cannot target a tile outside your field of view.', libtcod.yellow)})
+        return results
+
+
+    for entity in entities:
+        if entity.fighter and entity.x == target_x and entity.y == target_y:
+            if caster.distance_to(entity) > maximum_range:
+                results.append({'consumed': False,
+                                'message': Message('Target is too far.',
+                                                   libtcod.yellow)})
+            else:
+                target = entity
+
+    if target:
+        results.append({'evoked': True, 'target': target, 'message': Message('An arrow strikes the {0} for {1} damage'.format(target.name, damage))})
+        results.extend(target.fighter.take_damage(damage))
+    else:
+        results.append({'target': None, 'message': Message('No enemy is close enough to strike.', libtcod.red)})
+
+    return results
+
 def cast_lightning(*args, **kwargs):
     caster = args[0]
     entities = kwargs.get('entities')

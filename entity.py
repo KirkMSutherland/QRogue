@@ -13,6 +13,7 @@ from components.level import Level
 from components.item import Item
 from components.equipment import Equipment
 from components.equippable import Equippable
+from components.quick_use import Quickuse
 
 import uuid
 
@@ -22,7 +23,7 @@ class Entity:
     A generic object to represent players, enemies, items, etc.
     """
     def __init__(self, x, y, char, color, name, blocks=False, render_order=RenderOrder.CORPSE, fighter=None, ai=None,
-                 item=None, inventory=None, stairs=None, level=None, equipment=None, equippable=None,uID=None):
+                 item=None, inventory=None, stairs=None, level=None, equipment=None, equippable=None,uID=None, quick_use=None):
         self.x = x
         self.y = y
         self.char = char
@@ -38,6 +39,7 @@ class Entity:
         self.level = level
         self.equipment = equipment
         self.equippable = equippable
+        self.quick_use = quick_use
 
         #TODO check if stackable
         if uID is None:
@@ -183,6 +185,12 @@ class Entity:
         else:
             equippable_data = None
 
+        if self.quick_use:
+            quick_use_data = self.quick_use.to_json()
+        else:
+            quick_use_data = None
+
+
         json_data = {
             'x': self.x,
             'y': self.y,
@@ -199,7 +207,8 @@ class Entity:
             'level': level_data,
             'equipment': equipment_data,
             'equippable': equippable_data,
-            'uID': self.uID
+            'uID': self.uID,
+            'quick_use': quick_use_data
         }
 
         return json_data
@@ -223,6 +232,7 @@ class Entity:
         equipment_json = json_data.get('equipment')
         equippable_json = json_data.get('equippable')
         uID_data = json_data.get('uID')
+        quickuse_json = json_data.get('quick_use')
 
         entity = Entity(x, y, char, color, name, blocks, render_order,uID=uID_data)
 
@@ -267,6 +277,10 @@ class Entity:
         if equippable_json:
             entity.equippable = Equippable.from_json(equippable_json)
             entity.equippable.owner = entity
+
+        if quickuse_json:
+            entity.quick_use = Quickuse.from_json(quickuse_json)
+            entity.quick_use.owner = entity
 
         return entity
 

@@ -7,7 +7,7 @@ def handle_keys(key, game_state):
         return handle_player_turn_keys(key)
     elif game_state == GameStates.PLAYER_DEAD:
         return handle_player_dead_keys(key)
-    elif game_state in (GameStates.SHOW_INVENTORY, GameStates.DROP_INVENTORY):
+    elif game_state in (GameStates.SHOW_INVENTORY, GameStates.DROP_INVENTORY, GameStates.QUICK_USE):
         return handle_inventory_keys(key)
     elif game_state == GameStates.TARGETING:
         return handle_targeting_keys(key)
@@ -15,7 +15,26 @@ def handle_keys(key, game_state):
         return handle_level_up_menu(key)
     elif game_state == GameStates.CHARACTER_SCREEN:
         return handle_character_screen(key)
+    elif game_state == GameStates.QUICK_USE_NUMBER:
+        return handle_quickslot_keys(key)
     return {}
+
+def handle_quickslot_keys(key):
+    index = chr(key.c) - ord('1')
+
+    if index >= 0:
+        return {'quickslot_index': index}
+
+    if key.vk == libtcod.KEY_ENTER and key.lalt:
+        # Alt+Enter: toggle full screen
+        return {'fullscreen': True}
+    elif key.vk == libtcod.KEY_ESCAPE:
+        # Exit the menu
+        return {'exit': True}
+
+    return {}
+
+    return
 
 def handle_main_menu(key):
     key_char = chr(key.c)
@@ -60,6 +79,10 @@ def handle_player_turn_keys(key):
         return {'take_stairs': True}
     elif key_char == 'c':
         return {'show_character_screen': True}
+    elif key_char == 'q':
+        return {'quick_inventory': True}
+    elif ord(key_char) >= ord('1') and ord(key_char) < ord('6'):
+        return {'quick_use': ord(key_char) - ord('1') + 1}
 
     if key.vk == libtcod.KEY_ENTER and key.lalt:
         # Alt+Enter: toggle full screen

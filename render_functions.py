@@ -83,11 +83,15 @@ def render_all(con, panel, entities, player, game_map, fov_map, fov_recompute, m
 
     libtcod.console_blit(panel, 0, 0, screen_width, panel_height, 0, 0, panel_y)
 
-    if game_state in (GameStates.SHOW_INVENTORY, GameStates.DROP_INVENTORY):
+    if game_state in (GameStates.SHOW_INVENTORY, GameStates.DROP_INVENTORY,GameStates.QUICK_USE,GameStates.QUICK_USE_NUMBER):
         if game_state == GameStates.SHOW_INVENTORY:
             inventory_title = 'Press the key next to an item to use it, or Esc to cancel.\n'
-        else:
+        elif game_state == GameStates.DROP_INVENTORY:
             inventory_title = 'Press the key next to an item to drop it, or Esc to cancel.\n'
+        elif game_state == GameStates.QUICK_USE_NUMBER:
+            inventory_title = 'Press 1-5 to select a quick use slot'
+        elif game_state ==  GameStates.QUICK_USE:
+            inventory_title = 'Press the key next to an item to assign it to a quickslot'
 
         inventory_menu(con, inventory_title, player, 50, screen_width, screen_height)
 

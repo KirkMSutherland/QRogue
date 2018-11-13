@@ -50,9 +50,9 @@ class Equipment:
             if self.main_hand is not None:
                 if self.main_hand.uID == equippable_entity.uID:
                     self.main_hand = None
-                    results.append({'dequipped': equippable_entity})
+                    results.append({'unequipped': equippable_entity})
                 else:
-                    results.append({'dequipped': self.main_hand})
+                    results.append({'unequipped': self.main_hand})
 
                     self.main_hand = equippable_entity
                     results.append({'equipped': equippable_entity})
@@ -64,9 +64,9 @@ class Equipment:
             if self.off_hand is not None:
                 if self.off_hand.uID == equippable_entity.uID:
                     self.off_hand = None
-                    results.append({'dequipped': equippable_entity})
+                    results.append({'unequipped': equippable_entity})
                 else:
-                    results.append({'dequipped': self.off_hand})
+                    results.append({'unequipped': self.off_hand})
 
                     self.off_hand = equippable_entity
                     results.append({'equipped': equippable_entity})

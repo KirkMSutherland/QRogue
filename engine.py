@@ -1,4 +1,3 @@
-
 import libtcodpy as libtcod
 
 from entity import Entity, get_blocking_entities_at_location
@@ -11,17 +10,19 @@ from fov_functions import initialize_fov, recompute_fov
 from death_functions import kill_monster, kill_player
 from game_messages import Message
 from loader_functions.initialize_new_game import get_constants, get_game_variables
-#from loader_functions.data_loaders import load_game, save_game
+# from loader_functions.data_loaders import load_game, save_game
 from loader_functions.json_loaders import load_game, save_game
 from menus import main_menu, message_box
 from components.level import Level
 
+
 def main():
     constants = get_constants()
 
-    #libtcod.console_set_custom_font('consolas_unicode_16x16.png', libtcod.FONT_TYPE_GREYSCALE | libtcod.FONT_LAYOUT_TCOD)
-    #libtcod.console_set_custom_font('arial10x10.png', libtcod.FONT_TYPE_GREYSCALE | libtcod.FONT_LAYOUT_TCOD)
-    libtcod.console_set_custom_font('terminal16x16_gs_ro.png', libtcod.FONT_TYPE_GREYSCALE | libtcod.FONT_LAYOUT_ASCII_INROW)
+    # libtcod.console_set_custom_font('consolas_unicode_16x16.png', libtcod.FONT_TYPE_GREYSCALE | libtcod.FONT_LAYOUT_TCOD)
+    # libtcod.console_set_custom_font('arial10x10.png', libtcod.FONT_TYPE_GREYSCALE | libtcod.FONT_LAYOUT_TCOD)
+    libtcod.console_set_custom_font('terminal16x16_gs_ro.png',
+                                    libtcod.FONT_TYPE_GREYSCALE | libtcod.FONT_LAYOUT_ASCII_INROW)
 
     libtcod.console_init_root(constants['screen_width'], constants['screen_height'], constants['window_title'], False)
 
@@ -80,7 +81,8 @@ def main():
             libtcod.console_clear(con)
             play_game(player, entities, game_map, message_log, game_state, con, panel, constants)
 
-            show_main_menu = True         
+            show_main_menu = True
+
 
 def play_game(player, entities, game_map, message_log, game_state, con, panel, constants):
     fov_recompute = True
@@ -119,6 +121,7 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
         pickup = action.get('pickup')
         show_inventory = action.get('show_inventory')
         drop_inventory = action.get('drop_inventory')
+        quick_inventory = action.get('quick_inventory')
         inventory_index = action.get('inventory_index')
         exit = action.get('exit')
         fullscreen = action.get('fullscreen')
@@ -127,6 +130,8 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
         left_click = mouse_action.get('left_click')
         right_click = mouse_action.get('right_click')
         show_character_screen = action.get('show_character_screen')
+        quickslot_index = action.get('quickslot_index')
+        quick_slot = action.get('quick_use')
 
         player_turn_results = []
 
@@ -142,7 +147,7 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
                     attack_results = player.fighter.attack(target)
                     player_turn_results.extend(attack_results)
                 elif target:
-                    message_log.add_message(Message('You take a short rest',libtcod.white))
+                    message_log.add_message(Message('You take a short rest', libtcod.white))
                 else:
                     player.move(dx, dy)
 
@@ -160,6 +165,11 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
             else:
                 message_log.add_message(Message('There is nothing here to pick up.', libtcod.yellow))
 
+        if quick_slot:
+            for item in player.inventory.items:
+                if item.uID == player.quick_use.quick_list[quick_slot - 1]:
+                    player_turn_results.extend(player.inventory.use(item, entities=entities, fov_map=fov_map))
+
         if show_inventory:
             previous_game_state = game_state
             game_state = GameStates.SHOW_INVENTORY
@@ -167,6 +177,10 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
         if drop_inventory:
             previous_game_state = game_state
             game_state = GameStates.DROP_INVENTORY
+
+        if quick_inventory:
+            previous_game_state = game_state
+            game_state = GameStates.QUICK_USE
 
         if inventory_index is not None and previous_game_state != GameStates.PLAYER_DEAD and inventory_index < len(
                 player.inventory.items):
@@ -176,6 +190,8 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
                 player_turn_results.extend(player.inventory.use(item, entities=entities, fov_map=fov_map))
             elif game_state == GameStates.DROP_INVENTORY:
                 player_turn_results.extend(player.inventory.drop_item(item))
+            elif game_state == GameStates.QUICK_USE:
+                player_turn_results.extend(player.quick_use.add_item(0, item))
 
         if take_stairs and game_state == GameStates.PLAYERS_TURN:
             for entity in entities:
@@ -215,7 +231,8 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
                 player_turn_results.append({'targeting_cancelled': True})
 
         if exit:
-            if game_state in (GameStates.SHOW_INVENTORY, GameStates.DROP_INVENTORY, GameStates.CHARACTER_SCREEN):
+            if game_state in (GameStates.SHOW_INVENTORY, GameStates.DROP_INVENTORY, GameStates.CHARACTER_SCREEN,
+                              GameStates.QUICK_USE):
                 game_state = previous_game_state
             elif game_state == GameStates.TARGETING:
                 player_turn_results.append({'targeting_cancelled': True})
@@ -229,6 +246,7 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
         if fullscreen:
             libtcod.console_set_fullscreen(not libtcod.console_is_fullscreen())
 
+        # resolve and display the results
         for player_turn_result in player_turn_results:
             message = player_turn_result.get('message')
             dead_entity = player_turn_result.get('dead')
@@ -239,6 +257,8 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
             targeting_cancelled = player_turn_result.get('targeting_cancelled')
             equip = player_turn_result.get('equip')
             xp = player_turn_result.get('xp')
+            evoked = player_turn_result.get('evoked')
+            item_slotted = player_turn_result.get('item_slotted')
 
             if message:
                 message_log.add_message(message)
@@ -251,12 +271,15 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
 
                 message_log.add_message(message)
 
+            if item_slotted:
+                game_state = GameStates.PLAYERS_TURN
+
             if item_added:
                 entities.remove(item_added)
 
                 game_state = GameStates.ENEMY_TURN
 
-            if item_consumed:
+            if item_consumed or evoked:
                 game_state = GameStates.ENEMY_TURN
 
             if item_dropped:
@@ -269,13 +292,13 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
 
                 for equip_result in equip_results:
                     equipped = equip_result.get('equipped')
-                    dequipped = equip_result.get('dequipped')
+                    unequipped = equip_result.get('unequipped')
 
                     if equipped:
                         message_log.add_message(Message('You equipped the {0}'.format(equipped.name)))
 
-                    if dequipped:
-                        message_log.add_message(Message('You dequipped the {0}'.format(dequipped.name)))
+                    if unequipped:
+                        message_log.add_message(Message('You unequipped the {0}'.format(unequipped.name)))
 
                 game_state = GameStates.ENEMY_TURN
 
@@ -331,5 +354,6 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
             else:
                 game_state = GameStates.PLAYERS_TURN
 
+
 if __name__ == '__main__':
-     main()
+    main()

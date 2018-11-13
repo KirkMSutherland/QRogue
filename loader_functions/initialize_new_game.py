@@ -4,6 +4,7 @@ from components.inventory import Inventory
 from components.level import Level
 from components.equipment import Equipment
 from components.equippable import Equippable
+from components.quick_use import Quickuse
 
 from entity import Entity
 
@@ -42,7 +43,7 @@ def get_constants():
     fov_radius = 10
 
     max_monsters_per_room = 3
-    max_items_per_room = 12
+    max_items_per_room = 20
 
     colors = {
         'dark_wall': libtcod.Color(0, 0, 100),
@@ -81,9 +82,10 @@ def get_game_variables(constants):
     inventory_component = Inventory(26)
     level_component = Level()
     equipment_component = Equipment()
+    quick_use_component = Quickuse()
     player = Entity(0, 0, '@', libtcod.white, 'Player', blocks=True, render_order=RenderOrder.ACTOR,
                     fighter=fighter_component, inventory=inventory_component, level=level_component,
-                    equipment=equipment_component)
+                    equipment=equipment_component,quick_use=quick_use_component)
     entities = [player]
 
     equippable_component = Equippable(EquipmentSlots.MAIN_HAND, power_bonus=2)

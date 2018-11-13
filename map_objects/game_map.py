@@ -7,7 +7,7 @@ from components.ai import BasicMonster
 from components.fighter import Fighter
 from render_functions import RenderOrder
 from components.item import Item
-from item_functions import cast_lightning, heal, cast_fireball, cast_confuse
+from item_functions import *
 from game_messages import Message
 from components.stairs import Stairs
 from random_utils import random_choice_from_dict, from_dungeon_level
@@ -136,7 +136,8 @@ class GameMap:
             'shield': from_dungeon_level([[15, 1]], self.dungeon_level),
             'lightning_scroll': from_dungeon_level([[25, 4]], self.dungeon_level),
             'fireball_scroll': from_dungeon_level([[25, 6]], self.dungeon_level),
-            'confusion_scroll': from_dungeon_level([[10, 2]], self.dungeon_level)
+            'confusion_scroll': from_dungeon_level([[10, 2]], self.dungeon_level),
+            'bow': from_dungeon_level([[25, 1]], self.dungeon_level)
         }
 
         for i in range(number_of_monsters):
@@ -193,7 +194,12 @@ class GameMap:
                     item_component = Item(use_function=cast_lightning, damage=20, maximum_range=5)
                     item = Entity(x, y, '#', libtcod.yellow, 'Lightning Scroll', render_order=RenderOrder.ITEM,
                                   item=item_component)                    
-
+                elif item_choice == 'bow':
+                    item_component = Item(use_function=fire_arrow, targeting=True, targeting_message=Message(
+                        "Left-click a target for the bow, or right click to cancel", libtcod.yellow), damage=5,
+                                          maximum_range=7)
+                    item = Entity(x, y, ')', libtcod.yellow, 'Bow', render_order=RenderOrder.ITEM,
+                                  item=item_component)
                 entities.append(item)                
 
     def next_floor(self, player, message_log, constants):
