@@ -2,13 +2,18 @@ import libtcodpy as libtcod
 
 from game_messages import Message
 
+
 class Fighter:
-    def __init__(self, hp, defense, power, xp=0):
+    def __init__(self, hp, defense, power, xp=0, mp=0, st=0):
         self.base_max_hp = hp
         self.hp = hp
         self.base_defense = defense
         self.base_power = power
         self.xp = xp
+        self.base_max_mp = mp
+        self.mp = mp
+        self.base_max_st = st
+        self.st = st
 
     def take_damage(self, amount):
         results = []
@@ -37,7 +42,7 @@ class Fighter:
         else:
             results.append({'message': Message('{0} attacks {1} but does no damage.'.format(
                 self.owner.name.capitalize(), target.name), libtcod.white)})
-            
+
         return results
 
     @property
@@ -69,24 +74,36 @@ class Fighter:
 
     def to_json(self):
         json_data = {
-            'base_max_hp': self.max_hp,
+            'base_max_hp': self.base_max_hp,
             'hp': self.hp,
             'base_defense': self.base_defense,
             'base_power': self.base_power,
-            'xp': self.xp
+            'xp': self.xp,
+            'base_max_mp': self.base_max_mp,
+            'mp': self.mp,
+            'base_max_st': self.base_max_st,
+            'st': self.st
         }
 
         return json_data
 
     @staticmethod
     def from_json(json_data):
-        max_hp = json_data.get('base_max_hp')
+        base_max_hp = json_data.get('base_max_hp')
         hp = json_data.get('hp')
         defense = json_data.get('base_defense')
         power = json_data.get('base_power')
         xp = json_data.get('xp')
+        max_st = json_data.get('max_st')
+        st = json_data.get('st')
+        base_max_mp = json_data.get('base_max_mp')
+        mp = json_data.get('mp')
 
-        fighter = Fighter(max_hp, defense, power, xp)
+        fighter = Fighter(base_max_hp, defense, power, xp)
         fighter.hp = hp
+        fighter.st = st
+        fighter.mp = mp
+        fighter.max_st = max_st
+        fighter.base_max_mp = base_max_mp
 
         return fighter

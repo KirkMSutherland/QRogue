@@ -56,7 +56,7 @@ def inventory_menu(con, header, player, inventory_width, screen_width, screen_he
 def main_menu(con, background_image, screen_width, screen_height):
     libtcod.image_blit_2x(background_image, 0, 0, 0)
 
-    libtcod.console_set_default_foreground(0, libtcod.light_yellow)
+    libtcod.console_set_default_foreground(0, libtcod.dark_red)
     libtcod.console_print_ex(0, int(screen_width / 2), int(screen_height / 2) - 4, libtcod.BKGND_NONE, libtcod.CENTER,
                              'DARK SPIRAL')
     libtcod.console_print_ex(0, int(screen_width / 2), int(screen_height - 2), libtcod.BKGND_NONE, libtcod.CENTER,

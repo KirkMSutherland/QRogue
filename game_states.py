@@ -12,3 +12,4 @@ class GameStates(Enum):
     CHARACTER_SCREEN = 8
     QUICK_USE = 9
     QUICK_USE_NUMBER = 10
+    CLICK_MOVE = 11

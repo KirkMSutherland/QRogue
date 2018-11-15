@@ -96,6 +96,16 @@ class GameMap:
                 rooms.append(new_room)
                 num_rooms += 1
 
+        ground_tile = {1: '.', 2: ':', 3: ';', 4: '`', 5: '-', 6: ','}
+        wall_tile = {1: "#", 2: "P", 3: "&"}
+
+        for y in range(self.height):
+            for x in range(self.width):
+                if self.tiles[x][y].blocked:
+                    self.tiles[x][y].char = wall_tile[randint(1,len(wall_tile))]
+                else:
+                    self.tiles[x][y].char = ground_tile[randint(1,len(ground_tile))]
+
         stairs_component = Stairs(self.dungeon_level + 1)
         down_stairs = Entity(center_of_last_room_x, center_of_last_room_y, '>', libtcod.white, 'Stairs',
                              render_order=RenderOrder.STAIRS, stairs=stairs_component)

@@ -42,17 +42,22 @@ def render_all(con, panel, entities, player, game_map, fov_map, fov_recompute, m
 
                 if visible:
                     if wall:
-                        libtcod.console_set_char_background(con, x, y, colors.get('light_wall'), libtcod.BKGND_SET)
+                        libtcod.console_put_char_ex(con, x, y, game_map.tiles[x][y].char, colors.get('fore_light_wall'),
+                                                    colors.get('back_light_wall'))
                     else:
-                        libtcod.console_set_char_background(con, x, y, colors.get('light_ground'), libtcod.BKGND_SET)
+                        libtcod.console_put_char_ex(con, x, y, game_map.tiles[x][y].char,
+                                                    colors.get('fore_light_ground'),
+                                                    colors.get('back_light_ground'))
 
                     game_map.tiles[x][y].explored = True
 
                 elif game_map.tiles[x][y].explored:                        
                     if wall:
-                        libtcod.console_set_char_background(con, x, y, colors.get('dark_wall'), libtcod.BKGND_SET)
+                        libtcod.console_set_char_background(con, x, y, colors.get('back_dark_wall'), libtcod.BKGND_SET)
                     else:
-                        libtcod.console_set_char_background(con, x, y, colors.get('dark_ground'), libtcod.BKGND_SET)
+                        libtcod.console_set_char_background(con, x, y, colors.get('back_dark_ground'), libtcod.BKGND_SET)
+
+                #libtcod.console_put_char(con, x, y, game_map.tiles[x][y].char)
     
     # Draw all entities in the list
     entities_in_render_order = sorted(entities, key=lambda x: x.render_order.value)
@@ -74,7 +79,13 @@ def render_all(con, panel, entities, player, game_map, fov_map, fov_recompute, m
     render_bar(panel, 1, 1, bar_width, 'HP', player.fighter.hp, player.fighter.max_hp,
                libtcod.light_red, libtcod.darker_red)
 
-    libtcod.console_print_ex(panel, 1, 3, libtcod.BKGND_NONE, libtcod.LEFT,
+    render_bar(panel, 1, 2, bar_width, 'ST', 7, 10,
+               libtcod.light_green, libtcod.darker_green)
+
+    render_bar(panel, 1, 3, bar_width, 'MP', 7, 10,
+               libtcod.light_blue, libtcod.darker_blue)
+
+    libtcod.console_print_ex(panel, 1, 4, libtcod.BKGND_NONE, libtcod.LEFT,
                              'Dungeon level: {0}'.format(game_map.dungeon_level))
 
     libtcod.console_set_default_foreground(panel, libtcod.light_gray)

@@ -4,11 +4,13 @@ import item_functions
 
 
 class Item:
-    def __init__(self, use_function=None, targeting=False, targeting_message=None, **kwargs):
+    def __init__(self, use_function=None, targeting=False, targeting_message=None, stackable=False, number=1, **kwargs):
         self.use_function = use_function
         self.targeting = targeting
         self.targeting_message = targeting_message
         self.function_kwargs = kwargs
+        self.stackable = stackable
+        self.number = number
 
     def to_json(self):
         if self.targeting_message:
@@ -20,7 +22,8 @@ class Item:
             'use_function': self.use_function.__name__ if self.use_function is not None else None,
             'targeting': self.targeting,
             'targeting_message': targeting_message_json,
-            'function_kwargs': self.function_kwargs
+            'function_kwargs': self.function_kwargs,
+            'stackable': self.stackable
         }
 
         return json_data
@@ -31,6 +34,8 @@ class Item:
         targeting = json_data.get('targeting')
         targeting_message_json = json_data.get('targeting_message')
         function_kwargs = json_data.get('function_kwargs', {})
+        stackable_data = json_data.get('stackable')
+        number_data = json_data.get('number')
 
         if use_function_name:
             use_function = getattr(item_functions, use_function_name)
@@ -42,6 +47,6 @@ class Item:
         else:
             targeting_message = None
 
-        item = Item(use_function, targeting, targeting_message, **function_kwargs)
+        item = Item(use_function, targeting, targeting_message, stackable=stackable_data, number=number_data, **function_kwargs)
 
         return item

@@ -14,7 +14,7 @@ from loader_functions.initialize_new_game import get_constants, get_game_variabl
 from loader_functions.json_loaders import load_game, save_game
 from menus import main_menu, message_box
 from components.level import Level
-
+import math
 
 def main():
     constants = get_constants()
@@ -133,10 +133,56 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
         quickslot_index = action.get('quickslot_index')
         quick_slot = action.get('quick_use')
 
+        enemies_afoot = False
+        for entity in entities:
+            if libtcod.map_is_in_fov(fov_map, entity.x, entity.y) and entity.ai:
+                enemies_afoot = True
+                break
+
         player_turn_results = []
 
-        if move and game_state == GameStates.PLAYERS_TURN:
-            dx, dy = move
+        if right_click and game_state == game_state.PLAYERS_TURN and not enemies_afoot:
+            (x,y) = mouse_action['right_click']
+            move_target = lambda: None
+            setattr(move_target, 'x', x)
+            setattr(move_target, 'y', y)
+
+            if game_map.tiles[x][y].explored:
+                game_state = game_state.CLICK_MOVE
+
+        if game_state == game_state.CLICK_MOVE:
+
+            if enemies_afoot:
+                game_state = game_state.ENEMY_TURN
+
+            if game_state != game_state.ENEMY_TURN:
+                if player.distance_to(move_target) < 1:
+                    game_state = game_state.PLAYERS_TURN
+                else:
+                    if player.move_astar(move_target, entities, game_map, max_path=200, check_explored=True):
+                        fov_recompute = True
+                    else:
+                        game_state = game_state.PLAYERS_TURN
+
+        if (move or left_click or (enemies_afoot and right_click)) and game_state == GameStates.PLAYERS_TURN:
+            if move:
+                dx, dy = move
+            else:
+                if left_click:
+                    target_x, target_y = mouse_action['left_click']
+                else:
+                    target_x, target_y = mouse_action['right_click']
+                dx = target_x - player.x
+                dy = target_y - player.y
+                distance = math.sqrt(dx ** 2 + dy ** 2)
+
+                if distance != 0:
+                    dx = int(round(dx / distance))
+                    dy = int(round(dy / distance))
+                else:
+                    dx = 0
+                    dy = 0
+
             destination_x = player.x + dx
             destination_y = player.y + dy
 
@@ -155,7 +201,7 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
 
                 game_state = GameStates.ENEMY_TURN
 
-        elif pickup and game_state == GameStates.PLAYERS_TURN:
+        if pickup and game_state == GameStates.PLAYERS_TURN:
             for entity in entities:
                 if entity.item and entity.x == player.x and entity.y == player.y:
                     pickup_results = player.inventory.add_item(entity)
@@ -207,7 +253,7 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
 
         if level_up:
             if level_up == 'hp':
-                player.fighter.base_max_hp += 20
+                player.fighter.max_hp += 20
                 player.fighter.hp += 20
             elif level_up == 'str':
                 player.fighter.base_power += 1
@@ -326,7 +372,7 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
                     previous_game_state = game_state
                     game_state = GameStates.LEVEL_UP
 
-        if game_state == GameStates.ENEMY_TURN:
+        if game_state == GameStates.ENEMY_TURN or game_state == game_state.CLICK_MOVE:
             for entity in entities:
                 if entity.ai:
                     enemy_turn_results = entity.ai.take_turn(player, fov_map, game_map, entities)
@@ -352,7 +398,8 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
                     if game_state == GameStates.PLAYER_DEAD:
                         break
             else:
-                game_state = GameStates.PLAYERS_TURN
+                if game_state != game_state.CLICK_MOVE:
+                    game_state = GameStates.PLAYERS_TURN
 
 
 if __name__ == '__main__':
