@@ -23,7 +23,8 @@ class Item:
             'targeting': self.targeting,
             'targeting_message': targeting_message_json,
             'function_kwargs': self.function_kwargs,
-            'stackable': self.stackable
+            'stackable': self.stackable,
+            'number': self.number
         }
 
         return json_data

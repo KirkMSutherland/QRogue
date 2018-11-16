@@ -40,25 +40,32 @@ def render_all(con, panel, entities, player, game_map, fov_map, fov_recompute, m
                 visible = libtcod.map_is_in_fov(fov_map, x, y)
                 wall = game_map.tiles[x][y].block_sight
 
+                back_col = ''
+                fore_col = ''
+
                 if visible:
                     if wall:
-                        libtcod.console_put_char_ex(con, x, y, game_map.tiles[x][y].char, colors.get('fore_light_wall'),
-                                                    colors.get('back_light_wall'))
+                        back_col = 'back_light_wall'
+                        fore_col = 'fore_light_wall'
                     else:
-                        libtcod.console_put_char_ex(con, x, y, game_map.tiles[x][y].char,
-                                                    colors.get('fore_light_ground'),
-                                                    colors.get('back_light_ground'))
+                        back_col = 'back_light_ground'
+                        fore_col = 'fore_light_ground'
 
                     game_map.tiles[x][y].explored = True
 
                 elif game_map.tiles[x][y].explored:                        
                     if wall:
-                        libtcod.console_set_char_background(con, x, y, colors.get('back_dark_wall'), libtcod.BKGND_SET)
+                        back_col = 'back_dark_wall'
+                        fore_col = 'fore_dark_wall'
                     else:
-                        libtcod.console_set_char_background(con, x, y, colors.get('back_dark_ground'), libtcod.BKGND_SET)
+                        back_col = 'back_dark_ground'
+                        fore_col = 'fore_dark_ground'
 
-                #libtcod.console_put_char(con, x, y, game_map.tiles[x][y].char)
-    
+                if back_col and fore_col:
+                    libtcod.console_put_char_ex(con, x, y, game_map.tiles[x][y].char,
+                                                colors.get(fore_col),
+                                                colors.get(back_col))
+
     # Draw all entities in the list
     entities_in_render_order = sorted(entities, key=lambda x: x.render_order.value)
     for entity in entities_in_render_order:
@@ -119,7 +126,7 @@ def clear_all(con, entities):
 
 def draw_entity(con, entity, fov_map, game_map):
 
-    if libtcod.map_is_in_fov(fov_map, entity.x, entity.y) or ( (entity.stairs or entity.item) and game_map.tiles[entity.x][entity.y].explored):
+    if libtcod.map_is_in_fov(fov_map, entity.x, entity.y) or ((entity.stairs or entity.item or entity.render_order == RenderOrder.CORPSE) and game_map.tiles[entity.x][entity.y].explored):
         libtcod.console_set_default_foreground(con, entity.color)
         libtcod.console_put_char(con, entity.x, entity.y, entity.char, libtcod.BKGND_NONE)
 

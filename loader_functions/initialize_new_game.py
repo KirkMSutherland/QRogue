@@ -53,7 +53,7 @@ def get_constants():
         'fore_dark_wall': libtcod.darkest_gray,
         'fore_dark_ground': libtcod.darkest_sepia,
         'fore_light_wall': libtcod.dark_gray,
-        'fore_light_ground': libtcod.sepia
+        'fore_light_ground': libtcod.light_sepia
 
     }
 

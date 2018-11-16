@@ -4,7 +4,7 @@ from game_messages import Message
 
 
 class Fighter:
-    def __init__(self, hp, defense, power, xp=0, mp=0, st=0):
+    def __init__(self, hp, defense, power, xp=0, mp=0, st=0, conditions={}):
         self.base_max_hp = hp
         self.hp = hp
         self.base_defense = defense
@@ -14,6 +14,7 @@ class Fighter:
         self.mp = mp
         self.base_max_st = st
         self.st = st
+        self.conditions = conditions
 
     def take_damage(self, amount):
         results = []
@@ -82,7 +83,8 @@ class Fighter:
             'base_max_mp': self.base_max_mp,
             'mp': self.mp,
             'base_max_st': self.base_max_st,
-            'st': self.st
+            'st': self.st,
+            'conditions': self.conditions
         }
 
         return json_data
@@ -98,6 +100,7 @@ class Fighter:
         st = json_data.get('st')
         base_max_mp = json_data.get('base_max_mp')
         mp = json_data.get('mp')
+        conditions = json_data.get('conditions')
 
         fighter = Fighter(base_max_hp, defense, power, xp)
         fighter.hp = hp
@@ -105,5 +108,6 @@ class Fighter:
         fighter.mp = mp
         fighter.max_st = max_st
         fighter.base_max_mp = base_max_mp
+        fighter.conditions = conditions
 
         return fighter
