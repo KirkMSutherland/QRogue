@@ -1,6 +1,6 @@
 import libtcodpy as libtcod
 from game_states import GameStates
-from menus import character_screen, inventory_menu, level_up_menu
+from menus import character_screen, inventory_menu, level_up_menu, examine_screen
 from enum import Enum
 
 class RenderOrder(Enum):
@@ -101,7 +101,8 @@ def render_all(con, panel, entities, player, game_map, fov_map, fov_recompute, m
 
     libtcod.console_blit(panel, 0, 0, screen_width, panel_height, 0, 0, panel_y)
 
-    if game_state in (GameStates.SHOW_INVENTORY, GameStates.DROP_INVENTORY,GameStates.QUICK_USE,GameStates.QUICK_USE_NUMBER):
+    if game_state in (GameStates.SHOW_INVENTORY, GameStates.DROP_INVENTORY, GameStates.QUICK_USE,
+                      GameStates.QUICK_USE_NUMBER):
         if game_state == GameStates.SHOW_INVENTORY:
             inventory_title = 'Press the key next to an item to use it, or Esc to cancel.\n'
         elif game_state == GameStates.DROP_INVENTORY:
@@ -117,7 +118,11 @@ def render_all(con, panel, entities, player, game_map, fov_map, fov_recompute, m
         level_up_menu(con, 'Level up! Choose a stat to raise:', player, 40, screen_width, screen_height)
 
     elif game_state == GameStates.CHARACTER_SCREEN:
-        character_screen(player, 30, 12, screen_width, screen_height)
+        character_screen(player, 40, 30, screen_width, screen_height)
+
+    elif game_state == GameStates.EXAMINE_SCREEN:
+        examine_screen(entities, mouse, fov_map, 40, 30, screen_width, screen_height)
+
 
 def clear_all(con, entities):
     for entity in entities:
@@ -126,7 +131,8 @@ def clear_all(con, entities):
 
 def draw_entity(con, entity, fov_map, game_map):
 
-    if libtcod.map_is_in_fov(fov_map, entity.x, entity.y) or ((entity.stairs or entity.item or entity.render_order == RenderOrder.CORPSE) and game_map.tiles[entity.x][entity.y].explored):
+    if libtcod.map_is_in_fov(fov_map, entity.x, entity.y) or ((entity.stairs or entity.item or
+            entity.render_order == RenderOrder.CORPSE) and game_map.tiles[entity.x][entity.y].explored):
         libtcod.console_set_default_foreground(con, entity.color)
         libtcod.console_put_char(con, entity.x, entity.y, entity.char, libtcod.BKGND_NONE)
 

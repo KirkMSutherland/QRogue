@@ -46,6 +46,14 @@ def inventory_menu(con, header, player, inventory_width, screen_width, screen_he
                 if player.equipment.off_hand.uID == item.uID:
                     options.append('{0} (on off hand)'.format(item.name))
                     iflag = 1
+            if player.equipment.r_ring is not None:
+                if player.equipment.r_ring.uID == item.uID:
+                    options.append('{0} (on right ring finger)'.format(item.name))
+                    iflag = 1
+            if player.equipment.l_ring is not None:
+                if player.equipment.l_ring.uID == item.uID:
+                    options.append('{0} (on left ring finger)'.format(item.name))
+                    iflag = 1
 
             if iflag == 0:
                 options.append(item.name)
@@ -99,10 +107,64 @@ def character_screen(player, character_screen_width, character_screen_height, sc
         libtcod.console_print_rect_ex(window, 0, 10, character_screen_width, character_screen_height, libtcod.BKGND_NONE,
                                       libtcod.LEFT, 'Off Hand: {0}'.format(player.equipment.off_hand.name))
 
+    if player.equipment.r_ring is not None:
+        libtcod.console_print_rect_ex(window, 0, 11, character_screen_width, character_screen_height, libtcod.BKGND_NONE,
+                                      libtcod.LEFT, 'Right Ring: {0}'.format(player.equipment.r_ring.name))
+
+    if player.equipment.l_ring is not None:
+        libtcod.console_print_rect_ex(window, 0, 12, character_screen_width, character_screen_height, libtcod.BKGND_NONE,
+                                      libtcod.LEFT, 'Left Ring: {0}'.format(player.equipment.l_ring.name))
+
+    #character substats
+    idx = 13
+    for res in player.fighter.resistance:
+        libtcod.console_print_rect_ex(window, 0, idx, character_screen_width, character_screen_height, libtcod.BKGND_NONE,
+                                  libtcod.LEFT, '{0}: {1}'.format(res, player.fighter.resistance[res]))
+        idx += 1
+
+
     x = screen_width // 2 - character_screen_width // 2
     y = screen_height // 2 - character_screen_height // 2
     libtcod.console_blit(window, 0, 0, character_screen_width, character_screen_height, 0, x, y, 1.0, 0.7)
 
+
+def examine_screen(entities, mouse, fov_map, character_screen_width, character_screen_height, screen_width, screen_height):
+
+    window = libtcod.console_new(character_screen_width, character_screen_height)
+    libtcod.console_set_default_foreground(window, libtcod.white)
+    (x, y) = (mouse.cx, mouse.cy)
+
+    for entity in entities:
+        if entity.x == x and entity.y == y and libtcod.map_is_in_fov(fov_map, entity.x, entity.y):
+
+            libtcod.console_print_rect_ex(window, 0, 1, character_screen_width, character_screen_height, libtcod.BKGND_NONE,
+                                          libtcod.LEFT, '{0}'.format(entity.name))
+            libtcod.console_print_rect_ex(window, 0, 2, character_screen_width, character_screen_height, libtcod.BKGND_NONE,
+                                          libtcod.LEFT, 'Resistances')
+
+            idx = 3
+            if entity.fighter:
+                for res in entity.fighter.resistance:
+                    libtcod.console_print_rect_ex(window, 0, idx, character_screen_width, character_screen_height,
+                                                  libtcod.BKGND_NONE,
+                                                  libtcod.LEFT, '{0}: {1}'.format(res, entity.fighter.resistance[res]))
+                    idx += 1
+
+            libtcod.console_print_rect_ex(window, 0, idx, character_screen_width, character_screen_height, libtcod.BKGND_NONE,
+                                          libtcod.LEFT, 'Conditions')
+
+            idx += 1
+
+            if entity.fighter:
+                for con in entity.fighter.conditions:
+                    libtcod.console_print_rect_ex(window, 0, idx, character_screen_width, character_screen_height,
+                                                  libtcod.BKGND_NONE,
+                                                  libtcod.LEFT, '{0}: {1}'.format(con, entity.fighter.conditions[con]))
+                    idx += 1
+
+    x = screen_width // 2 - character_screen_width // 2
+    y = screen_height // 2 - character_screen_height // 2
+    libtcod.console_blit(window, 0, 0, character_screen_width, character_screen_height, 0, x, y, 1.0, 0.7)
 
 def message_box(con, header, width, screen_width, screen_height):
     menu(con, header, [], width, screen_width, screen_height)    

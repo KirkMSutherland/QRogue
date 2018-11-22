@@ -84,6 +84,7 @@ def cast_lightning(*args, **kwargs):
     return results
 
 def cast_fireball(*args, **kwargs):
+    caster = args[0]
     entities = kwargs.get('entities')
     fov_map = kwargs.get('fov_map')
     damage = kwargs.get('damage')
@@ -107,6 +108,7 @@ def cast_fireball(*args, **kwargs):
     return results
 
 def cast_confuse(*args, **kwargs):
+    caster = args[0]
     entities = kwargs.get('entities')
     fov_map = kwargs.get('fov_map')
     target_x = kwargs.get('target_x')
@@ -115,20 +117,18 @@ def cast_confuse(*args, **kwargs):
     results = []
 
     if not libtcod.map_is_in_fov(fov_map, target_x, target_y):
-        results.append({'consumed': False, 'message': Message('You cannot target a tile outside your field of view.', libtcod.yellow)})
+        results.append({'consumed': False,
+                        'message': Message('You cannot target a tile outside your field of view.', libtcod.yellow)})
         return results
 
     for entity in entities:
-        if entity.x == target_x and entity.y == target_y and entity.ai:
-            confused_ai = ConfusedMonster(entity.ai, 10)
-
-            confused_ai.owner = entity
-            entity.ai = confused_ai
-
-            results.append({'consumed': True, 'message': Message('The eyes of the {0} look vacant, as he starts to stumble around!'.format(entity.name), libtcod.light_green)})
+        if entity.x == target_x and entity.y == target_y and entity.fighter:
+            results.append({'consumed': True, 'message': Message('Confusion is cast!')})
+            results.extend(entity.fighter.take_condition({'confusion': [10, 1]}))
 
             break
     else:
-        results.append({'consumed': False, 'message': Message('There is no targetable enemy at that location.', libtcod.yellow)})
+        results.append({'consumed': False,
+                        'message': Message('There is no targetable enemy at that location.', libtcod.yellow)})
 
     return results

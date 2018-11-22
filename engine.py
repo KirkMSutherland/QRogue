@@ -43,6 +43,8 @@ def main():
     key = libtcod.Key()
     mouse = libtcod.Mouse()
 
+    libtcod.sys_set_fps(24)
+
     while not libtcod.console_is_window_closed():
         libtcod.sys_check_for_event(libtcod.EVENT_KEY_PRESS | libtcod.EVENT_MOUSE, key, mouse)
 
@@ -97,6 +99,8 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
 
     targeting_item = None
 
+    libtcod.sys_set_fps(24)
+
     while not libtcod.console_is_window_closed():
         libtcod.sys_check_for_event(libtcod.EVENT_KEY_PRESS | libtcod.EVENT_MOUSE, key, mouse)
 
@@ -132,6 +136,7 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
         show_character_screen = action.get('show_character_screen')
         quickslot_index = action.get('quickslot_index')
         quick_slot = action.get('quick_use')
+        examine_entity = action.get('examine_entity')
 
         enemies_afoot = False
         for entity in entities:
@@ -159,7 +164,7 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
                 if player.distance_to(move_target) < 1:
                     game_state = game_state.PLAYERS_TURN
                 else:
-                    if player.move_astar(move_target, entities, game_map, max_path=200, check_explored=True):
+                    if player.move_astar(move_target, entities, game_map, max_path=300, check_explored=True):
                         fov_recompute = True
                     else:
                         game_state = game_state.PLAYERS_TURN
@@ -224,6 +229,10 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
             previous_game_state = game_state
             game_state = GameStates.DROP_INVENTORY
 
+        if examine_entity:
+            previous_game_state = game_state
+            game_state = GameStates.EXAMINE_SCREEN
+
         if quick_inventory:
             previous_game_state = game_state
             game_state = GameStates.QUICK_USE
@@ -278,7 +287,7 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
 
         if exit:
             if game_state in (GameStates.SHOW_INVENTORY, GameStates.DROP_INVENTORY, GameStates.CHARACTER_SCREEN,
-                              GameStates.QUICK_USE):
+                              GameStates.QUICK_USE, GameStates.EXAMINE_SCREEN):
                 game_state = previous_game_state
             elif game_state == GameStates.TARGETING:
                 player_turn_results.append({'targeting_cancelled': True})

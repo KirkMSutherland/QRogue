@@ -2,10 +2,11 @@ import libtcodpy as libtcod
 from components.fighter import Fighter
 from components.inventory import Inventory
 from components.level import Level
+from components.item import Item
 from components.equipment import Equipment
 from components.equippable import Equippable
 from components.quick_use import Quickuse
-
+from game_messages import Message
 from entity import Entity
 
 from game_messages import MessageLog
@@ -16,6 +17,7 @@ from map_objects.game_map import GameMap
 
 from render_functions import RenderOrder
 from components.equipment_slots import EquipmentSlots
+from item_functions import cast_confuse, cast_fireball,cast_lightning
 
 def get_constants():
     window_title = 'Dark Spiral'
@@ -93,12 +95,35 @@ def get_game_variables(constants):
                     equipment=equipment_component,quick_use=quick_use_component)
     entities = [player]
 
+    #Starting Equipment TESTING
     equippable_component = Equippable(EquipmentSlots.MAIN_HAND, power_bonus=2)
-
 
     dagger = Entity(0, 0, '-', libtcod.sky, 'Dagger', equippable=equippable_component)
     player.inventory.add_item(dagger)
     player.equipment.toggle_equip(dagger)
+
+    item_component = Item(use_function=cast_confuse, targeting=True, targeting_message=Message(
+        'Left-click an enemy to confuse it, or right-click to cancel.', libtcod.light_cyan))
+    scroll = Entity(0, 0, '#', libtcod.light_pink, 'Confusion Scroll', render_order=RenderOrder.ITEM,
+                  item=item_component)
+    player.inventory.add_item(scroll)
+    player.inventory.add_item(scroll)
+
+    equippable_component = Equippable(EquipmentSlots.MAIN_HAND, power_bonus=3,affliction={'bleeding':[5,2]})
+    item = Entity(0, 0, '/', libtcod.sky, 'Sword of Many Cuts', equippable=equippable_component)
+    player.inventory.add_item(item)
+
+    item_component = Item(use_function=cast_fireball, targeting=True, targeting_message=Message(
+        'Left-click a target tile for the fireball, or right-click to cancel.', libtcod.light_cyan),
+                          damage=12, radius=3)
+    item = Entity(0, 0, '#', libtcod.red, 'Fireball Scroll', render_order=RenderOrder.ITEM,
+                  item=item_component)
+    player.inventory.add_item(item)
+
+    equippable_component = Equippable(EquipmentSlots.L_RING, resist={'confusion': 100})
+    ring = Entity(0, 0, '=', libtcod.sky, 'Ring of Steady Mind', equippable=equippable_component)
+    player.inventory.add_item(ring)
+
 
 
     game_map = GameMap(constants['map_width'], constants['map_height'])

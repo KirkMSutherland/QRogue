@@ -73,6 +73,15 @@ class GameMap:
                     # this is the first room, where the player starts at
                     player.x = new_x
                     player.y = new_y
+
+
+                    #FIXME adding test dummy
+                    fighter_component = Fighter(hp=100, defense=1, power=1, xp=100)
+                    monster = Entity(new_x+2, new_y+2, 'd', libtcod.darker_crimson, 'Test Dummy', blocks=True, fighter=fighter_component,
+                                     render_order=RenderOrder.ACTOR)
+                    entities.append(monster)
+
+
                 else:
                     # all rooms after the first:
                     # connect it to the previous room with a tunnel
@@ -158,7 +167,7 @@ class GameMap:
             if not any([entity for entity in entities if entity.x == x and entity.y == y]):
                 monster_choice = random_choice_from_dict(monster_chances)
                 if monster_choice == 'orc':
-                    fighter_component = Fighter(hp=10, defense=0, power=3, xp=35)
+                    fighter_component = Fighter(hp=10, defense=0, power=3, xp=35, resists={'slaps': 10})
                     ai_component = BasicMonster()
 
                     monster = Entity(x, y, 'o', libtcod.desaturated_green, 'Orc', blocks=True,

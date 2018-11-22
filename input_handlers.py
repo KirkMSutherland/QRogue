@@ -17,6 +17,8 @@ def handle_keys(key, game_state):
         return handle_character_screen(key)
     elif game_state == GameStates.QUICK_USE_NUMBER:
         return handle_quickslot_keys(key)
+    elif game_state ==  GameStates.EXAMINE_SCREEN:
+        return handle_examine_screen(key)
     return {}
 
 def handle_quickslot_keys(key):
@@ -81,6 +83,8 @@ def handle_player_turn_keys(key):
         return {'show_character_screen': True}
     elif key_char == 'q':
         return {'quick_inventory': True}
+    elif key_char == 'e':
+        return {'examine_entity': True}
     elif ord(key_char) >= ord('1') and ord(key_char) < ord('6'):
         return {'quick_use': ord(key_char) - ord('1') + 1}
 
@@ -110,6 +114,12 @@ def handle_player_dead_keys(key):
     return {}
 
 def handle_character_screen(key):
+    if key.vk == libtcod.KEY_ESCAPE:
+        return {'exit': True}
+
+    return {}
+
+def handle_examine_screen(key):
     if key.vk == libtcod.KEY_ESCAPE:
         return {'exit': True}
 

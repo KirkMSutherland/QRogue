@@ -1,9 +1,11 @@
 from components.equipment_slots import EquipmentSlots
 
 class Equipment:
-    def __init__(self, main_hand=None, off_hand=None):
+    def __init__(self, main_hand=None, off_hand=None, l_ring=None, r_ring=None):
         self.main_hand = main_hand
         self.off_hand = off_hand
+        self.l_ring = l_ring
+        self.r_ring = r_ring
 
     @property
     def max_hp_bonus(self):
@@ -14,6 +16,42 @@ class Equipment:
 
         if self.off_hand and self.off_hand.equippable:
             bonus += self.off_hand.equippable.max_hp_bonus
+
+        return bonus
+
+    @property
+    def resistance_bonus(self):
+        bonus = {}
+
+        if self.main_hand and self.main_hand.equippable:
+            bonus.update(self.main_hand.equippable.resist)
+
+        if self.off_hand and self.off_hand.equippable:
+            bonus.update(self.main_hand.equippable.resist)
+
+        if self.l_ring and self.l_ring.equippable:
+            bonus.update(self.l_ring.equippable.resist)
+
+        if self.r_ring and self.r_ring.equippable:
+            bonus.update(self.r_ring.equippable.resist)
+
+        return bonus
+
+    @property
+    def affliction_bonus(self):
+        bonus = {}
+
+        if self.main_hand and self.main_hand.equippable:
+            bonus.update(self.main_hand.equippable.affliction)
+
+        if self.off_hand and self.off_hand.equippable:
+            bonus.update(self.main_hand.equippable.affliction)
+
+        if self.l_ring and self.l_ring.equippable:
+            bonus.update(self.l_ring.equippable.affliction)
+
+        if self.r_ring and self.r_ring.equippable:
+            bonus.update(self.r_ring.equippable.affliction)
 
         return bonus
 
@@ -73,6 +111,36 @@ class Equipment:
 
             else:
                 self.off_hand = equippable_entity
+                results.append({'equipped': equippable_entity})
+
+        elif slot == EquipmentSlots.R_RING:
+            if self.r_ring is not None:
+                if self.r_ring.uID == equippable_entity.uID:
+                    self.r_ring = None
+                    results.append({'unequipped': equippable_entity})
+                else:
+                    results.append({'unequipped': self.r_ring})
+
+                    self.r_ring = equippable_entity
+                    results.append({'equipped': equippable_entity})
+
+            else:
+                self.r_ring = equippable_entity
+                results.append({'equipped': equippable_entity})
+
+        elif slot == EquipmentSlots.L_RING:
+            if self.l_ring is not None:
+                if self.l_ring.uID == equippable_entity.uID:
+                    self.l_ring = None
+                    results.append({'unequipped': equippable_entity})
+                else:
+                    results.append({'unequipped': self.l_ring})
+
+                    self.l_ring = equippable_entity
+                    results.append({'equipped': equippable_entity})
+
+            else:
+                self.l_ring = equippable_entity
                 results.append({'equipped': equippable_entity})
 
         return results

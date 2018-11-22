@@ -2,9 +2,12 @@ import libtcodpy as libtcod
 
 from game_messages import Message
 
+from random import randint
+
 
 class Fighter:
-    def __init__(self, hp, defense, power, xp=0, mp=0, st=0, conditions={}):
+    def __init__(self, hp, defense, power, xp=0, mp=0, st=0, conditions={}, resists={}, afflictions={}, base_acc=0,
+                 base_eva=0):
         self.base_max_hp = hp
         self.hp = hp
         self.base_defense = defense
@@ -15,6 +18,10 @@ class Fighter:
         self.base_max_st = st
         self.st = st
         self.conditions = conditions
+        self.resists = resists
+        self.afflictions = afflictions
+        self.base_acc = base_acc
+        self.base_eva = base_eva
 
     def take_damage(self, amount):
         results = []
@@ -23,6 +30,36 @@ class Fighter:
 
         if self.hp <= 0:
             results.append({'dead': self.owner, 'xp': self.xp})
+
+        return results
+
+    def take_condition(self, condition):
+
+        results = []
+        for x in condition:
+            resisted = False
+
+            if x in self.resistance:
+                if self.resistance[x] > randint(0, 99):
+                    resisted = True
+
+            if resisted:
+                results.append({'message': Message('{0} resists the {1} effect!'.format(self.owner.name,
+                                                                                        x), libtcod.light_blue)})
+            else:
+                results.append({'message': Message('{0} is afflicted by {1}'.format(self.owner.name, x),
+                                                       libtcod.dark_red)})
+
+                # check if same condition already applied, if so then apply greatest magnitude and add duration
+                if x in self.conditions:
+                    new_duration, new_magnitude = condition[x]
+                    duration, magnitude = self.conditions[x]
+                    magnitude = max(new_magnitude, magnitude)
+                    duration += new_duration
+
+                    self.conditions[x] = [duration, magnitude]
+                else:
+                    self.conditions[x] = condition[x]
 
         return results
 
@@ -40,11 +77,32 @@ class Fighter:
             results.append({'message': Message('{0} attacks {1} for {2} hit points.'.format(
                 self.owner.name.capitalize(), target.name, str(damage)), libtcod.white)})
             results.extend(target.fighter.take_damage(damage))
+            if self.afflict:
+                target.fighter.take_condition(self.afflict)
         else:
             results.append({'message': Message('{0} attacks {1} but does no damage.'.format(
                 self.owner.name.capitalize(), target.name), libtcod.white)})
 
         return results
+
+    @property
+    def resistance(self):
+        bonus = {}
+        bonus.update(self.resists)
+        if self.owner and self.owner.equipment:
+            bonus.update(self.owner.equipment.resistance_bonus)
+
+        return bonus
+
+    @property
+    def afflict(self):
+        bonus = {}
+        bonus.update(self.afflictions)
+        if self.owner and self.owner.equipment:
+            bonus.update(self.owner.equipment.affliction_bonus)
+
+        return bonus
+
 
     @property
     def max_hp(self):
@@ -84,7 +142,11 @@ class Fighter:
             'mp': self.mp,
             'base_max_st': self.base_max_st,
             'st': self.st,
-            'conditions': self.conditions
+            'conditions': self.conditions,
+            'resists': self.resists,
+            'afflictions': self.afflictions,
+            'base_acc': self.base_acc,
+            'base_eva': self.base_eva
         }
 
         return json_data
@@ -101,6 +163,10 @@ class Fighter:
         base_max_mp = json_data.get('base_max_mp')
         mp = json_data.get('mp')
         conditions = json_data.get('conditions')
+        resists = json_data.get('resists')
+        afflictions = json_data.get('afflictions')
+        base_eva = json_data.get('base_eva')
+        base_acc = json_data.get('base_acc')
 
         fighter = Fighter(base_max_hp, defense, power, xp)
         fighter.hp = hp
@@ -109,5 +175,9 @@ class Fighter:
         fighter.max_st = max_st
         fighter.base_max_mp = base_max_mp
         fighter.conditions = conditions
+        fighter.resists = resists
+        fighter.afflictions = afflictions
+        fighter.base_eva = base_eva
+        fighter.base_acc = base_acc
 
         return fighter

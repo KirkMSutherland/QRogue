@@ -13,3 +13,4 @@ class GameStates(Enum):
     QUICK_USE = 9
     QUICK_USE_NUMBER = 10
     CLICK_MOVE = 11
+    EXAMINE_SCREEN = 12
