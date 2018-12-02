@@ -76,7 +76,7 @@ class GameMap:
 
 
                     #FIXME adding test dummy
-                    fighter_component = Fighter(hp=100, defense=1, power=1, xp=100)
+                    fighter_component = Fighter(hp=20, defense=1, power=1, xp=100)
                     monster = Entity(new_x+2, new_y+2, 'd', libtcod.darker_crimson, 'Test Dummy', blocks=True, fighter=fighter_component,
                                      render_order=RenderOrder.ACTOR)
                     entities.append(monster)
@@ -146,7 +146,8 @@ class GameMap:
 
         monster_chances = {
             'orc': 80,
-            'troll': from_dungeon_level([[15, 3], [30, 5], [60, 7]], self.dungeon_level)
+            'troll': from_dungeon_level([[15, 3], [30, 5], [60, 7]], self.dungeon_level),
+            'honeybadger': 40
         }
 
         item_chances = {
@@ -167,7 +168,7 @@ class GameMap:
             if not any([entity for entity in entities if entity.x == x and entity.y == y]):
                 monster_choice = random_choice_from_dict(monster_chances)
                 if monster_choice == 'orc':
-                    fighter_component = Fighter(hp=10, defense=0, power=3, xp=35, resists={'slaps': 10})
+                    fighter_component = Fighter(hp=10, defense=0, power=3, xp=35)
                     ai_component = BasicMonster()
 
                     monster = Entity(x, y, 'o', libtcod.desaturated_green, 'Orc', blocks=True,
@@ -178,6 +179,13 @@ class GameMap:
 
                     monster = Entity(x, y, 'T', libtcod.darker_green, 'Troll', blocks=True, fighter=fighter_component,
                                      render_order=RenderOrder.ACTOR, ai=ai_component)
+                elif monster_choice == 'honeybadger':
+                    fighter_component = Fighter(hp=20, defense=0,power=2,xp=150)
+                    fighter_component.afflictions = {'bleeding':[2, 1]}
+                    ai_component = BasicMonster()
+                    monster = Entity(x, y, 'h', libtcod.sepia, 'Honeybadger', blocks=True, fighter=fighter_component,
+                                     render_order=RenderOrder.ACTOR, ai=ai_component)
+
 
                 entities.append(monster)
 

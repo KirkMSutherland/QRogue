@@ -382,33 +382,48 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
                     game_state = GameStates.LEVEL_UP
 
         if game_state == GameStates.ENEMY_TURN or game_state == game_state.CLICK_MOVE:
+
+            # before anybody takes their turn
+            player_eot = player.fighter.EndofTurn()
+            process_turn(player, player_eot, message_log)
+
             for entity in entities:
                 if entity.ai:
+
                     enemy_turn_results = entity.ai.take_turn(player, fov_map, game_map, entities)
+                    process_turn(player, enemy_turn_results, message_log)
 
-                    for enemy_turn_result in enemy_turn_results:
-                        message = enemy_turn_result.get('message')
-                        dead_entity = enemy_turn_result.get('dead')
+                    # Manage conditions and end of turn effects
+                    if entity.fighter:
+                        enemy_turn_results = entity.fighter.EndofTurn()
 
-                        if message:
-                            message_log.add_message(message)
-
-                        if dead_entity:
-                            if dead_entity == player:
-                                message, game_state = kill_player(dead_entity)
-                            else:
-                                message = kill_monster(dead_entity)
-
-                            message_log.add_message(message)
-
-                            if game_state == GameStates.PLAYER_DEAD:
-                                break
+                    process_turn(player, enemy_turn_results, message_log)
 
                     if game_state == GameStates.PLAYER_DEAD:
                         break
+
             else:
                 if game_state != game_state.CLICK_MOVE:
                     game_state = GameStates.PLAYERS_TURN
+
+
+def process_turn(player, enemy_turn_results, message_log):
+    for enemy_turn_result in enemy_turn_results:
+        message = enemy_turn_result.get('message')
+        dead_entity = enemy_turn_result.get('dead')
+
+        if message:
+            message_log.add_message(message)
+
+        if dead_entity:
+            if dead_entity == player:
+                message, game_state = kill_player(dead_entity)
+            else:
+                message = kill_monster(dead_entity)
+            message_log.add_message(message)
+
+            if game_state == GameStates.PLAYER_DEAD:
+                break
 
 
 if __name__ == '__main__':

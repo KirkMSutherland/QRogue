@@ -27,7 +27,7 @@ class Equipment:
             bonus.update(self.main_hand.equippable.resist)
 
         if self.off_hand and self.off_hand.equippable:
-            bonus.update(self.main_hand.equippable.resist)
+            bonus.update(self.off_hand.equippable.resist)
 
         if self.l_ring and self.l_ring.equippable:
             bonus.update(self.l_ring.equippable.resist)

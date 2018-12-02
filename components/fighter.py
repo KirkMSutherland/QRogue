@@ -6,8 +6,7 @@ from random import randint
 
 
 class Fighter:
-    def __init__(self, hp, defense, power, xp=0, mp=0, st=0, conditions={}, resists={}, afflictions={}, base_acc=0,
-                 base_eva=0):
+    def __init__(self, hp, defense, power, xp=0, mp=0, st=0, base_acc=0, base_eva=0):
         self.base_max_hp = hp
         self.hp = hp
         self.base_defense = defense
@@ -17,9 +16,9 @@ class Fighter:
         self.mp = mp
         self.base_max_st = st
         self.st = st
-        self.conditions = conditions
-        self.resists = resists
-        self.afflictions = afflictions
+        self.conditions = {}
+        self.resists = {}
+        self.afflictions = {}
         self.base_acc = base_acc
         self.base_eva = base_eva
 
@@ -48,18 +47,13 @@ class Fighter:
                                                                                         x), libtcod.light_blue)})
             else:
                 results.append({'message': Message('{0} is afflicted by {1}'.format(self.owner.name, x),
-                                                       libtcod.dark_red)})
+                                                   libtcod.dark_red)})
 
-                # check if same condition already applied, if so then apply greatest magnitude and add duration
-                if x in self.conditions:
-                    new_duration, new_magnitude = condition[x]
-                    duration, magnitude = self.conditions[x]
-                    magnitude = max(new_magnitude, magnitude)
-                    duration += new_duration
-
-                    self.conditions[x] = [duration, magnitude]
-                else:
-                    self.conditions[x] = condition[x]
+                new_duration, new_magnitude = condition[x]
+                duration, magnitude = self.conditions.get(x, [0, 0])
+                magnitude = max(new_magnitude, magnitude)
+                duration += new_duration
+                self.conditions[x] = [duration, magnitude]
 
         return results
 
@@ -78,10 +72,26 @@ class Fighter:
                 self.owner.name.capitalize(), target.name, str(damage)), libtcod.white)})
             results.extend(target.fighter.take_damage(damage))
             if self.afflict:
-                target.fighter.take_condition(self.afflict)
+                results.extend(target.fighter.take_condition(self.afflict))
         else:
             results.append({'message': Message('{0} attacks {1} but does no damage.'.format(
                 self.owner.name.capitalize(), target.name), libtcod.white)})
+
+        return results
+
+    def EndofTurn(self):
+        results = []
+        for con in self.conditions:
+            if con == 'bleeding':
+                duration, magnitude = self.conditions.get(con)
+                if duration > 0:
+                    results.append({'message': Message('{0} is bleeding!'.format(
+                        self.owner.name.capitalize()), libtcod.dark_red)})
+                    self.take_damage(magnitude)
+                    duration -= 1
+                    self.conditions[con] = [duration, magnitude]
+
+            #if con == 'confusion':
 
         return results
 
@@ -102,7 +112,6 @@ class Fighter:
             bonus.update(self.owner.equipment.affliction_bonus)
 
         return bonus
-
 
     @property
     def max_hp(self):
