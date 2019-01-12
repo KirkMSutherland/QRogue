@@ -2,8 +2,6 @@ import libtcodpy as libtcod
 
 from game_messages import Message
 
-from components.ai import ConfusedMonster
-
 def heal(*args, **kwargs):
 
     entity = args[0]
